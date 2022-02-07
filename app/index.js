@@ -1,6 +1,21 @@
 const express = require(`express`);
 const app = express();
 const PORT = process.env.PORT || 3000;
+const client = require('prom-client');
+
+const register = new client.Registry()
+register.setDefaultLabels({
+  app: 'example-nodejs-app'
+});
+client.collectDefaultMetrics({ register })
+
+
+app.get(`/metrics`, async (req, res) => {
+  res.set('Content-Type', register.contentType);
+    let metrics = await register.metrics();
+    res.send(metrics);
+  res.send(register.metrics()).status(200);
+});
 
 app.get(`/health`, (req, res) => {
   res.send({
